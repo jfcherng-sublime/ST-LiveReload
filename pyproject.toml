@@ -1,0 +1,110 @@
+[project]
+name = "LiveReload"
+version = "0.0.0"
+description = "LiveReload plugin for SublimeText"
+readme = "README.md"
+requires-python = ">=3.14.4,<3.15"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/jfcherng-sublime/ST-LiveReload"
+Repository = "https://github.com/jfcherng-sublime/ST-LiveReload"
+"Bug Tracker" = "https://github.com/jfcherng-sublime/ST-LiveReload/issues"
+
+[dependency-groups]
+dev = [
+  "mypy>=2",
+  "pytest>=9",
+  "pytest-cov>=6",
+  "ruff>=0.15",
+  "typing-extensions>=4.15",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.mypy]
+# ignore_missing_imports = False
+check_untyped_defs = true
+disallow_untyped_defs = true
+strict_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+strict_equality = true
+enable_error_code = ["ignore-without-code"]
+mypy_path = 'typings:stubs'
+python_version = '3.14'
+
+[[tool.mypy.overrides]]
+module = [
+  "magika.*",
+  "plugin._vendor.*",
+]
+ignore_errors = true
+ignore_missing_imports = true
+
+[tool.pyright]
+include = ['./']
+exclude = [
+  '**/__pycache__/',
+  '**/node_modules/',
+  # git-related
+  '**/.git/',
+  '**/br-*/',
+  '**/branch-*/',
+]
+ignore = ['**/.venv', '**/_vendor']
+stubPath = 'typings'
+pythonVersion = '3.14'
+
+[tool.ruff]
+preview = true
+line-length = 120
+target-version = 'py314'
+exclude = [
+  "*/libs/*",
+  ".git",
+  ".mypy_cache",
+  ".venv",
+  ".venv-*",
+  "_vendor",
+  "branch-*",
+  "stubs",
+  "tests/files",
+  "typings",
+  "venv",
+  "venv-*",
+]
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = [
+  "B",
+  "C4",
+  "E",
+  "F",
+  "FURB",
+  "I",
+  "PERF",
+  "PIE",
+  "RET",
+  "RUF",
+  "SIM",
+  "UP",
+  "W",
+]
+ignore = [
+  "class-as-data-structure",  # test stubs may not be dataclasses
+  "whitespace-before-punctuation",
+  "non-empty-init-module",  # ST plugins need plugin_loaded/unloaded in __init__.py
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint.per-file-ignores]
+"boot.py" = ["module-import-not-at-top-of-file"]
