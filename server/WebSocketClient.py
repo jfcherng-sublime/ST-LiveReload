@@ -1,33 +1,38 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 try:
     from .WSRequestHandler import WSRequestHandler
 except ValueError:
     from WSRequestHandler import WSRequestHandler
 
-from base64 import b64encode, b64decode
-import sublime
-import LiveReload
-from struct import pack, unpack_from
 import array
-import sys
 import json
 import logging
+import sys
+from base64 import b64decode
+from base64 import b64encode
+from struct import pack
+from struct import unpack_from
+
+import sublime
+
+import LiveReload
+
 try:
-    from hashlib import md5, sha1
+    from hashlib import sha1
 except:
-    from md5 import md5
     from sha import sha as sha1
 
-s2a = lambda s: [c for c in s]
+
+def s2a(s):
+    return list(s)
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('WebSocketClient')
 
 
-class WebSocketClient(object):
+class WebSocketClient:
 
     """
     A single connection (client) of the program
@@ -49,7 +54,7 @@ Sec-WebSocket-Accept: %s\r
         self.addr = handler.client_address
         self.server = handler.server
         try:
-            
+
             self.wsh = WSRequestHandler(self.socket, self.addr)
             if not hasattr(self.wsh, 'headers'):
                 self.close()
@@ -67,8 +72,7 @@ Sec-WebSocket-Accept: %s\r
                 if self.ver in ['7', '8', '13']:
                     self.version = 'hybi-%02d' % int(self.ver)
                 else:
-                    raise Exception('Unsupported protocol version %s'
-                                    % self.ver)
+                    raise Exception(f'Unsupported protocol version {self.ver}')
 
                 key = self.headers.get('Sec-WebSocket-Key')
 
@@ -79,10 +83,10 @@ Sec-WebSocket-Accept: %s\r
                 response += '\r\n'
                 self.socket.send(response.encode("UTF-8"))
                 self.handler.addClient(self)
-                while 0x1:
+                while True:
                     try:
                         data = self.socket.recv(1024)
-                    except Exception as e:
+                    except Exception:
                         log.exception('WebSocket error')
                         break
                     if not data:
@@ -96,7 +100,7 @@ Sec-WebSocket-Accept: %s\r
                 # Close the client connection
 
                 self.close()
-        except Exception as e:
+        except Exception:
             log.exception('Decoding error')
             self.close()
 
@@ -209,15 +213,14 @@ Sec-WebSocket-Accept: %s\r
             f['mask'] = buf[f['hlen']:f['hlen'] + 4]
             f['payload'] = WebSocketClient.unmask(buf, f)
         else:
-            log.info('Unmasked frame: %s' % repr(buf))
+            log.info(f'Unmasked frame: {buf!r}')
             f['payload'] = buf[f['hlen'] + has_mask * 4:full_len]
 
         if base64 and f['opcode'] in [0x1, 2]:
             try:
                 f['payload'] = b64decode(f['payload'])
             except:
-                log.exception('Exception while b64decoding buffer: %s'
-                    % repr(buf))
+                log.exception(f'Exception while b64decoding buffer: {buf!r}')
                 raise
 
         if f['opcode'] == 0x08:
@@ -254,16 +257,16 @@ Sec-WebSocket-Accept: %s\r
 
             if 'payload' in data:
                 req = json.loads(data.get('payload').decode("UTF-8"))
-                log.info('Command: %s' % req.get('command'))
+                log.info('Command: {}'.format(req.get('command')))
                 if not self.handshaken:
                     if req.get('command') == 'hello':
-                        sublime.set_timeout(lambda : \
+                        sublime.set_timeout(lambda :
                                 sublime.status_message('New LiveReload v2 client connected'
                                 ), 100)
                         self.send('{"command":"hello","protocols":["http://livereload.com/protocols/connection-check-1","http://livereload.com/protocols/official-6","http://livereload.com/protocols/official-7","http://dz0ny.info/sm2-plugin"]}'
                                   )
                     else:
-                        sublime.set_timeout(lambda : \
+                        sublime.set_timeout(lambda :
                                 sublime.status_message('New LiveReload v1 client connected'
                                 ), 100)
                         self.send('!!ver:' + str(self.server.version))
@@ -276,10 +279,10 @@ Sec-WebSocket-Accept: %s\r
                     try:
                         sys.modules['LiveReload'].PluginAPI.PluginFactory.dispatch_OnReceive(LiveReload.Plugin, data.get('payload'),
                                                         self.headers.get('Origin'))
-                    except Exception as e:
+                    except Exception:
                         log.exception('API error')
-                        
-        except Exception as e:
+
+        except Exception:
             log.exception('receive error')
 
     def _clean(self, msg):
@@ -288,5 +291,4 @@ Sec-WebSocket-Accept: %s\r
         """
 
         msg = msg.replace('\x00', '', 0x1)
-        msg = msg.replace('\xff', '', 0x1)
-        return msg
+        return msg.replace('\xff', '', 0x1)

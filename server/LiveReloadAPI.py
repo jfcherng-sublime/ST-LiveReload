@@ -1,24 +1,22 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-import sublime
 
-try:
-  from .Settings import Settings
-except ValueError:
-  from Settings import Settings
+import contextlib
 
-from functools import wraps
+with contextlib.suppress(ValueError):
+  pass
+
 
 def log(msg):
   print(msg)
 
-class LiveReloadAPI(object):
+
+class LiveReloadAPI:
 
     """Official LiveReloadAPI for SM2"""
 
     def __init__(self):
-        super(LiveReloadAPI, self).__init__()
+        super().__init__()
         self.callbacks = []
 
     def add_static_file(
@@ -60,7 +58,6 @@ class LiveReloadAPI(object):
           self.ws_server.send(data)
         except Exception as e:
           log(e)
-        
 
     def list_clients(self):
         """

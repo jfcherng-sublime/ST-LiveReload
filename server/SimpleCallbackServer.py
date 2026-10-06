@@ -1,8 +1,7 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 
-class SimpleCallbackServer(object):
+class SimpleCallbackServer:
 
     """SimpleCallbackServer"""
 

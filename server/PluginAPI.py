@@ -1,9 +1,11 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+
+import json
+
+import sublime
 
 import LiveReload
-import json
-import sublime
+
 try:
     from .Settings import Settings
 except ValueError:
@@ -48,15 +50,13 @@ class PluginFactory(type):
 
         if plugin.name in mcs.enabled_plugins:
             mcs.enabled_plugins.remove(plugin.name)
-            sublime.set_timeout(lambda : \
-                                sublime.status_message('"%s" the LiveReload plug-in has been disabled!'
-                                 % plugin.title), 100)
+            sublime.set_timeout(lambda :
+                                sublime.status_message(f'"{plugin.title}" the LiveReload plug-in has been disabled!'), 100)
             plugin.onDisabled()
         else:
             mcs.enabled_plugins.append(plugin.name)
-            sublime.set_timeout(lambda : \
-                                sublime.status_message('"%s" the LiveReload plug-in has been enabled!'
-                                 % plugin.title), 100)
+            sublime.set_timeout(lambda :
+                                sublime.status_message(f'"{plugin.title}" the LiveReload plug-in has been enabled!'), 100)
             plugin.onEnabled()
 
         # should only save permanent plug-ins
@@ -79,10 +79,9 @@ class PluginFactory(type):
     def listAllDefinedFilters(mcs):
         file_types = []
         for plugin in mcs.plugins:
-            if plugin.__name__ in mcs.enabled_plugins:
-                if plugin.file_types != '*':
-                    for ext in plugin.file_types.split(','):
-                        file_types.append(ext)
+            if plugin.__name__ in mcs.enabled_plugins and plugin.file_types != '*':
+                for ext in plugin.file_types.split(','):
+                    file_types.append(ext)
         return file_types
 
     def listPlugins(mcs):
@@ -111,12 +110,12 @@ class PluginFactory(type):
             except Exception as e:
                 log(e)
         try:
-            _wscallback = LiveReload.API.has_callback(data.path)
-            if _wscallback:
+            wscallback = LiveReload.API.has_callback(data.path)
+            if wscallback:
                 try:
                     func = getattr(sys.modules['LiveReload'
-                                   ].Plugin.getPlugin(_wscallback['mcs'
-                                   ]), _wscallback['name'], None)
+                                   ].Plugin.getPlugin(wscallback['mcs'
+                                   ]), wscallback['name'], None)
                     if func:
                         func(data)
                 except Exception as e:
@@ -153,21 +152,12 @@ class PluginClass:
             all_filters = LiveReload.Plugin.listAllDefinedFilters()
 
             def otherPluginsWithFilter():
-                for f in all_filters:
-                    if filename.endswith(f):
-                        return False
-                return True
+                return all(not filename.endswith(f) for f in all_filters)
 
             this_plugin = self.file_types.split(',')
 
-            if [f for f in this_plugin if filename.endswith(f)]:
-                return True
-            elif self.file_types == '*' and otherPluginsWithFilter():
-                return True
-            else:
-                return False
-        else:
-            return False
+            return bool([f for f in this_plugin if filename.endswith(f)] or (self.file_types == '*' and otherPluginsWithFilter()))
+        return False
 
     def addResource(
         self,
@@ -206,15 +196,14 @@ class PluginClass:
                 log('Missing path definition')
 
             if self.should_run(filename):
-                sublime.set_timeout(lambda : \
-                                    sublime.status_message('LiveReload refresh from %s'
-                                     % self.name), 100)
+                sublime.set_timeout(lambda :
+                                    sublime.status_message(f'LiveReload refresh from {self.name}'), 100)
 
                 # if we have defined filter
 
                 LiveReload.API.send(json.dumps(settings))
             else:
-                log('Skipping '+ self.name)
+                log('Skipping ' + self.name)
 
     def refresh(self, filename, settings=None):
         """
@@ -247,17 +236,11 @@ class PluginClass:
         - (string) origin of data
         """
 
-        pass
-
     def onEnabled(self):
         """ Runs when plug-in is enabled via menu"""
 
-        pass
-
     def onDisabled(self):
         """ Runs when plug-in is disabled via menu"""
-
-        pass
 
     @property
     def this_session_only(self):
@@ -272,7 +255,7 @@ class PluginClass:
         return '*'
 
 
-##black magic, python2 vs python3
+# black magic, python2 vs python3
 
 try:
     PluginInterface = PluginFactory('PluginInterface', (object,

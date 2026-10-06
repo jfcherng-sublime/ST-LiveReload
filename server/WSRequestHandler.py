@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 try:
     from SimpleHTTPServer import SimpleHTTPRequestHandler
 except ImportError:
@@ -15,6 +14,7 @@ except ImportError:
 import sys
 
 # HTTP handler with WebSocket upgrade support
+
 
 class WSRequestHandler(SimpleHTTPRequestHandler):
 
@@ -43,12 +43,12 @@ class WSRequestHandler(SimpleHTTPRequestHandler):
             self.last_message = '101 Switching Protocols'
         else:
             req = urlparse(self.path)
-            _file = LiveReload.API.has_file(req.path)
-            _httpcallback = LiveReload.API.has_callback(req.path)
-            if _httpcallback:
+            file = LiveReload.API.has_file(req.path)
+            httpcallback = LiveReload.API.has_callback(req.path)
+            if httpcallback:
                 try:
-                    plugin = sys.modules['LiveReload'].PluginAPI.PluginFactory.getPlugin(LiveReload.Plugin, _httpcallback['cls'])
-                    func = getattr(plugin, _httpcallback['name'], None)
+                    plugin = sys.modules['LiveReload'].PluginAPI.PluginFactory.getPlugin(LiveReload.Plugin, httpcallback['cls'])
+                    func = getattr(plugin, httpcallback['name'], None)
                     if func:
                         res = func(req)
                         self.send_response(200, res)
@@ -58,35 +58,31 @@ class WSRequestHandler(SimpleHTTPRequestHandler):
                 except Exception as e:
                     self.send_response(500, 'Error')
                     res = e
-                
+
                 self.send_header('Content-type', 'text/plain')
                 self.send_header('Content-Length', len(res))
                 self.end_headers()
                 self.wfile.write(bytes(res.encode("UTF-8")))
                 return
-            elif _file:
-                if hasattr(_file['buffer'], 'read'):
-                    _buffer = _file['buffer'].read()
-                else:
-                    _buffer = _file['buffer']
+            if file:
+                buffer = file['buffer'].read() if hasattr(file['buffer'], 'read') else file['buffer']
 
                 self.send_response(200, 'OK')
-                self.send_header('Content-type', _file['content_type'])
-                self.send_header('Content-Length', len(_buffer))
+                self.send_header('Content-type', file['content_type'])
+                self.send_header('Content-Length', len(buffer))
                 self.end_headers()
-                self.wfile.write(bytes(_buffer.encode("UTF-8")))
+                self.wfile.write(bytes(buffer.encode("UTF-8")))
                 return
-            else:
 
-                # Disable other requests
-                notallowed = "Method not allowed"
-                
-                self.send_response(405, notallowed)
-                self.send_header('Content-type', 'text/plain')
-                self.send_header('Content-Length', len(notallowed))
-                self.end_headers()
-                self.wfile.write(bytes(notallowed.encode("utf-8")))
-                return
+            # Disable other requests
+            notallowed = "Method not allowed"
+
+            self.send_response(405, notallowed)
+            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-Length', len(notallowed))
+            self.end_headers()
+            self.wfile.write(bytes(notallowed.encode("utf-8")))
+            return
 
     def send_response(self, code, message=None):
 

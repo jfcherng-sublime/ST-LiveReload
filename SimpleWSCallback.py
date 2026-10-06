@@ -1,14 +1,12 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-import os
-import sys
 import sublime
 import sublime_plugin
 
 from .server.PluginAPI import PluginInterface as Plugin
 
-##Modlue name must be the same as class or else callbacks won't work
+
+# Modlue name must be the same as class or else callbacks won't work
 class SimpleWSCallback(Plugin, sublime_plugin.EventListener):
 
     title = 'Send content on change'
@@ -22,6 +20,6 @@ class SimpleWSCallback(Plugin, sublime_plugin.EventListener):
         region = sublime.Region(0, view.size())
         source = view.substr(region)
         self.sendRaw("socket", source)
-        
+
     def onReceive(self, data, origin):
       print(data)

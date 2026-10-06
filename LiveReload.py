@@ -1,36 +1,33 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-import sublime
+import atexit
 import os
 import sys
 import threading
-import atexit
 import time
-from LiveReload import LiveReload as LL
+
+import sublime
 
 try:
 
     # Python 3
 
-    from .server.WebSocketServer import WebSocketServer
-    from .server.SimpleResourceServer import SimpleResourceServer
-    from .server.SimpleCallbackServer import SimpleCallbackServer
-    from .server.SimpleWSServer import SimpleWSServer
     from .server.LiveReloadAPI import LiveReloadAPI
-    from .server.PluginAPI import PluginInterface as Plugin
     from .server.Settings import Settings
+    from .server.SimpleCallbackServer import SimpleCallbackServer
+    from .server.SimpleResourceServer import SimpleResourceServer
+    from .server.SimpleWSServer import SimpleWSServer
+    from .server.WebSocketServer import WebSocketServer
 except ValueError:
 
     # Python 2
 
-    from server.WebSocketServer import WebSocketServer
-    from server.SimpleResourceServer import SimpleResourceServer
-    from server.SimpleCallbackServer import SimpleCallbackServer
-    from server.SimpleWSServer import SimpleWSServer
     from server.LiveReloadAPI import LiveReloadAPI
-    from server.PluginAPI import PluginInterface as Plugin
     from server.Settings import Settings
+    from server.SimpleCallbackServer import SimpleCallbackServer
+    from server.SimpleResourceServer import SimpleResourceServer
+    from server.SimpleWSServer import SimpleWSServer
+    from server.WebSocketServer import WebSocketServer
 
 
 def singleton(cls):
@@ -66,7 +63,7 @@ class LiveReload(threading.Thread, SimpleCallbackServer,
 
         path = os.path.join(sublime.packages_path(), 'LiveReload', 'web'
                             , 'dist', 'livereloadjs-sm2.js')
-        local = open(path, 'r')
+        local = open(path)
         self.add_static_file('/livereload.js', local.read(),
                              'text/javascript')
 
@@ -123,8 +120,7 @@ def http_callback(callback_f):
 
     """
 
-    callback_f.path = 'http://localhost:35729/callback/%s/%s' \
-        % (callback_f.__module__.lower(), callback_f.__name__)
+    callback_f.path = f'http://localhost:35729/callback/{callback_f.__module__.lower()}/{callback_f.__name__}'
     API.callbacks.append({'path': callback_f.path,
             'name': callback_f.__name__, 'cls': callback_f.__module__})
     return callback_f
@@ -147,8 +143,7 @@ def websocket_callback(callback_f):
 
     """
 
-    callback_f.path = 'SM2.%s.%s' % (callback_f.__module__.lower(),
-            callback_f.__name__)
+    callback_f.path = f'SM2.{callback_f.__module__.lower()}.{callback_f.__name__}'
     API.ws_callbacks.append({'path': callback_f.path,
             'name': callback_f.__name__, 'cls': callback_f.__module__})
     return callback_f

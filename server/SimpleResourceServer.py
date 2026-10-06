@@ -1,8 +1,7 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 
-class SimpleResourceServer(object):
+class SimpleResourceServer:
 
     """SimpleResourceServer"""
 

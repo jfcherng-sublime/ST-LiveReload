@@ -1,11 +1,13 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-import os
 import json
+import os
+from collections import UserDict
+
 
 def log(msg):
     pass
+
 
 try:
     import sublime
@@ -15,19 +17,19 @@ except Exception as e:
 
 def read_sublime_settings(file_path):
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             return sublime.decode_value(f.read())
-    except (IOError, ValueError):
+    except (OSError, ValueError):
         return None
 
 
-class Settings(dict):
+class Settings(UserDict):
 
     def __init__(self):
         try:
             log('---- SETTING -------')
             cdir = os.path.dirname(os.path.abspath(__file__))
-            if not "LiveReload" in cdir:
+            if "LiveReload" not in cdir:
                 cdir = os.path.join(sublime.packages_path(), 'LiveReload')
             self.file_name = os.path.join(cdir, '..', 'LiveReload.sublime-settings')
             data = read_sublime_settings(self.file_name) or {}

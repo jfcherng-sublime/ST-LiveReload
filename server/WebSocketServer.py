@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import logging
 
@@ -91,7 +90,7 @@ class WebSocketServer:
     """
 
     def __init__(self, port, version):
-        self.server = ThreadedTCPServer((u'', port),
+        self.server = ThreadedTCPServer(('', port),
                 ThreadedTCPRequestHandler, version)
 
     def send(self, data):

@@ -1,19 +1,20 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+
+import os
+import webbrowser
 
 import sublime
 import sublime_plugin
-import webbrowser
-import os
 
 from .server.PluginAPI import PluginInterface as Plugin
+
 
 class LiveReloadTest(sublime_plugin.ApplicationCommand):
 
     def run(self):
         path = os.path.join(sublime.packages_path(), 'LiveReload', 'web')
         file_name = os.path.join(path, 'test.html')
-        webbrowser.open_new_tab("file://"+file_name)
+        webbrowser.open_new_tab("file://" + file_name)
 
 
 class LiveReloadHelp(sublime_plugin.ApplicationCommand):

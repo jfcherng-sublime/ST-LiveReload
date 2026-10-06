@@ -1,7 +1,8 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from pyvows import Vows, expect
+from pyvows import Vows
+from pyvows import expect
+
 
 @Vows.batch
 class WebsocketServer(Vows.Context):

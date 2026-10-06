@@ -1,15 +1,15 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import os
-import sys
+
 import sublime
-import sublime_plugin
+
 from LiveReload import LiveReload as LL
 
 from .server.PluginAPI import PluginInterface as Plugin
 
-##Modlue name must be the same as class or else callbacks won't work
+
+# Modlue name must be the same as class or else callbacks won't work
 class SimpleReloadCallback(Plugin):
 
     title = 'Simple Reload from http GET request'

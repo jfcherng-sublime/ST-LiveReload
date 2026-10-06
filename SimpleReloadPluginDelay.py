@@ -1,12 +1,12 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import os
-import sys
+
 import sublime
 import sublime_plugin
 
 from .server.PluginAPI import PluginInterface as Plugin
+
 
 class SimpleRefreshDelay(Plugin, sublime_plugin.EventListener):
 

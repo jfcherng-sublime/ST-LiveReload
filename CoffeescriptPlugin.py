@@ -1,24 +1,24 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import os
-import threading
 import subprocess
-import sys
+import threading
+
 import sublime
 import sublime_plugin
 
 from .server.PluginAPI import PluginInterface as Plugin
+
 
 class CoffeeThread(threading.Thread):
 
     def getLocalOverride(self):
         """
         You can override defaults in sublime-project file
-        
+
         Discussion: https://github.com/dz0ny/LiveReload-sublimetext2/issues/43
-        
-        Example: 
+
+        Example:
 
             "settings": {
               "coffee": {
@@ -31,8 +31,7 @@ class CoffeeThread(threading.Thread):
             view_settings = view_settings.get('lrcoffee')
             if view_settings:
                 return view_settings
-            else:
-                return {}
+            return {}
         except Exception:
             return {}
 
@@ -40,15 +39,15 @@ class CoffeeThread(threading.Thread):
 
         self.filename = filename
 
-        ##TODO: Proper handler for this
+        # TODO: Proper handler for this
         try:
             self.dirname = self.getLocalOverride.get('dirname') \
             or dirname.replace('\\', '/')
-        except Exception as e:
+        except Exception:
             self.dirname = dirname.replace('\\', '/')
         try:
             self.command = self.getLocalOverride.get('command') or 'coffee -c'
-        except Exception as e:
+        except Exception:
             self.command = 'coffee -c'
 
         self.stdout = None
@@ -57,7 +56,7 @@ class CoffeeThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        cmd = self.command + " " + self.filename + " " + self.filename.replace('.coffee','.js')
+        cmd = self.command + " " + self.filename + " " + self.filename.replace('.coffee', '.js')
 
         p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
@@ -70,6 +69,7 @@ class CoffeeThread(threading.Thread):
             # something went wrong...
             err = test.split('\n')
             sublime.error_message(err[0])
+
 
 class coffeePreprocessor(Plugin, sublime_plugin.EventListener):
 

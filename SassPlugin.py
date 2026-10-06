@@ -1,18 +1,16 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from .server.Settings import read_sublime_settings
 import os
-import threading
+import re
 import subprocess
-import sys
+import threading
+
 import sublime
 import sublime_plugin
-import shlex
-import re
-import json
 
 from .server.PluginAPI import PluginInterface as Plugin
+from .server.Settings import read_sublime_settings
+
 
 class SassThread(threading.Thread):
     # init class
@@ -23,21 +21,21 @@ class SassThread(threading.Thread):
         # dirname
         try:
             self.dirname = self.getLocalOverride.get('dirname') or dirname.replace('\\', '/')
-        except Exception as e:
+        except Exception:
             self.dirname = dirname.replace('\\', '/')
 
         # default config
-        self.config = read_sublime_settings(os.path.join(sublime.packages_path(),'LiveReload','SassPlugin.sublime-settings')) or {}
+        self.config = read_sublime_settings(os.path.join(sublime.packages_path(), 'LiveReload', 'SassPlugin.sublime-settings')) or {}
 
         # check for local config
-        localConfigFile = os.path.join(self.dirname, "sass_config.json");
+        localConfigFile = os.path.join(self.dirname, "sass_config.json")
         if os.path.isfile(localConfigFile):
             localConfig = read_sublime_settings(localConfigFile)
             self.config.update(localConfig)
 
         try:
             self.command = self.getLocalOverride.get('command') or 'sass --update --stop-on-error --no-cache --sourcemap=none'
-        except Exception as e:
+        except Exception:
             self.command = 'sass --update --stop-on-error --no-cache --sourcemap=none'
 
         self.stdout = None
@@ -52,8 +50,7 @@ class SassThread(threading.Thread):
             view_settings = view_settings.get('lrsass')
             if view_settings:
                 return view_settings
-            else:
-                return {}
+            return {}
         except Exception:
             return {}
 
@@ -61,7 +58,7 @@ class SassThread(threading.Thread):
 
         source = os.path.join(self.dirname, self.filename)
         destinationDir = self.dirname if self.config['destination_dir'] is None else self.config['destination_dir']
-        destination = os.path.abspath(os.path.join(self.dirname, destinationDir, re.sub("\.(sass|scss)", '.css', self.filename)))
+        destination = os.path.abspath(os.path.join(self.dirname, destinationDir, re.sub(r"\.(sass|scss)", '.css', self.filename)))
 
         cmd = self.command + ' "' + source + '":"' + destination + '"'
 
@@ -76,8 +73,8 @@ class SassThread(threading.Thread):
 
         # Find the file to refresh from the console output
         if compiled:
-            print("[LiveReload Sass] reloading : " + compiled.decode("utf-8"));
-            matches = re.findall('\S+\.css', compiled.decode("utf-8"))
+            print("[LiveReload Sass] reloading : " + compiled.decode("utf-8"))
+            matches = re.findall(r'\S+\.css', compiled.decode("utf-8"))
             if len(matches) > 0:
                 for match in matches:
                     self.on_compile(match)

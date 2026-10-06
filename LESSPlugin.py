@@ -1,24 +1,24 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import os
-import threading
 import subprocess
-import sys
+import threading
+
 import sublime
 import sublime_plugin
 
 from .server.PluginAPI import PluginInterface as Plugin
+
 
 class LessThread(threading.Thread):
 
     def getLocalOverride(self):
         """
         You can override defaults in sublime-project file
-        
+
         Discussion: https://github.com/dz0ny/LiveReload-sublimetext2/issues/43
-        
-        Example: 
+
+        Example:
 
             "settings": {
               "lesscompass": {
@@ -31,8 +31,7 @@ class LessThread(threading.Thread):
             view_settings = view_settings.get('lrless')
             if view_settings:
                 return view_settings
-            else:
-                return {}
+            return {}
         except Exception:
             return {}
 
@@ -40,16 +39,16 @@ class LessThread(threading.Thread):
 
         self.filename = filename
 
-        ##TODO: Proper handler for this
+        # TODO: Proper handler for this
         try:
             self.dirname = self.getLocalOverride.get('dirname') \
             or dirname.replace('\\', '/')
-        except Exception as e:
+        except Exception:
             self.dirname = dirname.replace('\\', '/')
             # print(e)
         try:
             self.command = self.getLocalOverride.get('command') or 'lessc --verbose'
-        except Exception as e:
+        except Exception:
             self.command = 'lessc --verbose'
             # print(e)
 
@@ -59,7 +58,7 @@ class LessThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        cmd = self.command + " " + self.filename + " " + self.filename.replace('.less','.css')
+        cmd = self.command + " " + self.filename + " " + self.filename.replace('.less', '.css')
 
         p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
@@ -69,6 +68,7 @@ class LessThread(threading.Thread):
             print("ATSDFASDFASDFASD!!")
             print(test)
             self.on_compile()
+
 
 class lessPreprocessor(Plugin, sublime_plugin.EventListener):
 

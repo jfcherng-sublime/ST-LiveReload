@@ -1,18 +1,17 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from .server.Settings import read_sublime_settings
 import os
-import threading
+import pathlib
+import re
 import subprocess
-import sys
+import threading
+
 import sublime
 import sublime_plugin
-import shlex
-import re
-import json
 
 from .server.PluginAPI import PluginInterface as Plugin
+from .server.Settings import read_sublime_settings
+
 
 class CompassThread(threading.Thread):
 
@@ -36,22 +35,21 @@ class CompassThread(threading.Thread):
             view_settings = view_settings.get('lrcompass')
             if view_settings:
                 return view_settings
-            else:
-                return {}
+            return {}
         except Exception:
             return {}
 
     def __init__(self, dirname, on_compile):
-        ##TODO: Proper handler for this
+        # TODO: Proper handler for this
         try:
             self.dirname = self.getLocalOverride.get('dirname') \
             or dirname.replace('\\', '/')
-        except Exception as e:
+        except Exception:
             self.dirname = dirname.replace('\\', '/')
 
         try:
             self.command = self.getLocalOverride.get('command') or 'compass compile'
-        except Exception as e:
+        except Exception:
             self.command = 'compass compile'
 
         self.stdout = None
@@ -67,9 +65,8 @@ class CompassThread(threading.Thread):
         dirname = os.path.abspath(os.path.join(self.dirname, os.pardir)).replace('\\', '/')
         if self.dirname == dirname:
             return False
-        else:
-            self.dirname = dirname
-            return self.check_for_compass_config()
+        self.dirname = dirname
+        return self.check_for_compass_config()
 
     # Generate config.rb file
     def generate_conf_rb(self, dirname):
@@ -82,15 +79,14 @@ class CompassThread(threading.Thread):
         relative_assets=true
         line_comments = false
         """
-        with open(os.path.join(dirname, "config.rb"), 'w') as f:
-            f.write(config_rb)
+        pathlib.Path(os.path.join(dirname, "config.rb")).write_text(config_rb)
         self.dirname = dirname
         return
 
     def run(self):
         dirname = self.dirname
         if not self.check_for_compass_config():
-            if read_sublime_settings(os.path.join(sublime.packages_path(),'LiveReload','CompassPlugin.sublime-settings'))["create_configrb"]:
+            if read_sublime_settings(os.path.join(sublime.packages_path(), 'LiveReload', 'CompassPlugin.sublime-settings'))["create_configrb"]:
                 self.generate_conf_rb(dirname)
             else:
                 sublime.error_message("Could not find Compass config.rb. Please check your sublime-project file and adjust settings accordingly!")
@@ -106,7 +102,7 @@ class CompassThread(threading.Thread):
 
         # Find the file to refresh from the console output
         if compiled:
-            print("Compass : " + compiled.decode("utf-8"));
+            print("Compass : " + compiled.decode("utf-8"))
             matches = re.findall(r'\S+\.css', compiled.decode("utf-8"))
             if len(matches) > 0:
                 for match in matches:
