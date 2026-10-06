@@ -6,14 +6,9 @@ import sys
 import sublime
 import sublime_plugin
 
-# fix for import order
+from .server.PluginAPI import PluginInterface as Plugin
 
-sys.path.append(os.path.join(sublime.packages_path(), 'LiveReload'))
-LiveReload = __import__('LiveReload')
-sys.path.remove(os.path.join(sublime.packages_path(), 'LiveReload'))
-
-
-class SimpleRefreshDelay(LiveReload.Plugin, sublime_plugin.EventListener):
+class SimpleRefreshDelay(Plugin, sublime_plugin.EventListener):
 
     title = 'Simple Reload with delay(400ms)'
     description = 'Wait 400ms then refresh page, when file is saved'

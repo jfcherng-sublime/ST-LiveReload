@@ -6,14 +6,9 @@ import sys
 import sublime
 import sublime_plugin
 
-# fix for import order
+from .server.PluginAPI import PluginInterface as Plugin
 
-sys.path.append(os.path.join(sublime.packages_path(), 'LiveReload'))
-LiveReload = __import__('LiveReload')
-sys.path.remove(os.path.join(sublime.packages_path(), 'LiveReload'))
-
-
-class SimpleRefresh(LiveReload.Plugin, sublime_plugin.EventListener):
+class SimpleRefresh(Plugin, sublime_plugin.EventListener):
 
     title = 'Simple Reload'
     description = 'Refresh page, when file is saved'

@@ -8,12 +8,7 @@ import sys
 import sublime
 import sublime_plugin
 
-# fix for import order
-
-sys.path.append(os.path.join(sublime.packages_path(), 'LiveReload'))
-LiveReload = __import__('LiveReload')
-sys.path.remove(os.path.join(sublime.packages_path(), 'LiveReload'))
-
+from .server.PluginAPI import PluginInterface as Plugin
 
 class LessThread(threading.Thread):
 
@@ -75,7 +70,7 @@ class LessThread(threading.Thread):
             print(test)
             self.on_compile()
 
-class lessPreprocessor(LiveReload.Plugin, sublime_plugin.EventListener):
+class lessPreprocessor(Plugin, sublime_plugin.EventListener):
 
     title = 'Less Preprocessor'
     description = 'Less Compile and refresh page, when file is compiled'

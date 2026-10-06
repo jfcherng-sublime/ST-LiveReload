@@ -12,12 +12,7 @@ import shlex
 import re
 import json
 
-# fix for import order
-
-sys.path.append(os.path.join(sublime.packages_path(), 'LiveReload'))
-LiveReload = __import__('LiveReload')
-sys.path.remove(os.path.join(sublime.packages_path(), 'LiveReload'))
-
+from .server.PluginAPI import PluginInterface as Plugin
 
 class SassThread(threading.Thread):
     # init class
@@ -88,7 +83,7 @@ class SassThread(threading.Thread):
                     self.on_compile(match)
 
 
-class SassPreprocessor(LiveReload.Plugin, sublime_plugin.EventListener):
+class SassPreprocessor(Plugin, sublime_plugin.EventListener):
     title = 'Sass Preprocessor'
     description = 'Compile and refresh page, when file is compiled'
     file_types = '.scss,.sass'

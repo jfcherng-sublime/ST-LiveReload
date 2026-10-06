@@ -12,12 +12,7 @@ import shlex
 import re
 import json
 
-# fix for import order
-
-sys.path.append(os.path.join(sublime.packages_path(), 'LiveReload'))
-LiveReload = __import__('LiveReload')
-sys.path.remove(os.path.join(sublime.packages_path(), 'LiveReload'))
-
+from .server.PluginAPI import PluginInterface as Plugin
 
 class CompassThread(threading.Thread):
 
@@ -112,13 +107,13 @@ class CompassThread(threading.Thread):
         # Find the file to refresh from the console output
         if compiled:
             print("Compass : " + compiled.decode("utf-8"));
-            matches = re.findall('\S+\.css', compiled.decode("utf-8"))
+            matches = re.findall(r'\S+\.css', compiled.decode("utf-8"))
             if len(matches) > 0:
                 for match in matches:
                     self.on_compile(match)
 
 
-class CompassPreprocessor(LiveReload.Plugin,
+class CompassPreprocessor(Plugin,
     sublime_plugin.EventListener):
 
     title = 'Compass Preprocessor'

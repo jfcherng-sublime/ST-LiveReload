@@ -6,7 +6,7 @@ try:
 except ValueError:
     from WSRequestHandler import WSRequestHandler
 
-from base64 import b64encode, b64decode, encodestring
+from base64 import b64encode, b64decode
 import sublime
 import LiveReload
 from struct import pack, unpack_from
